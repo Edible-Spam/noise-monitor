@@ -1,0 +1,14 @@
+venv/
+__pycache__/
+*.pyc
+
+recordings/
+logs/
+
+*.wav
+*.db
+
+.idea/
+.vscode/
+
+.env
