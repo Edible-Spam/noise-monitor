@@ -4,6 +4,8 @@ Analyse audio in one-second windows.
 
 from __future__ import annotations
 
+from models.audio_frame import AudioFrame
+
 from processing.audio import rms, peak
 from processing.fft import dominant_frequency
 
@@ -29,12 +31,12 @@ def analyse_audio(samples, sample_rate):
         )
 
         results.append(
-            {
-                "second": second,
-                "rms": rms(block),
-                "peak": peak(block),
-                "dominant": dominant,
-            }
+		AudioFrame(
+			second=second,
+			rms=rms(block),
+			peak=peak(block),
+			dominant_frequency=dominant,
+		)
         )
 
     return results

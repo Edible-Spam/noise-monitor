@@ -43,13 +43,13 @@ def main():
 
     print("-" * 42)
 
-    for row in results:
+    for frame in results:
 
         print(
-            f"{row['second']:6d} "
-            f"{row['rms']:10.6f} "
-            f"{row['peak']:10.6f} "
-            f"{row['dominant']:10.1f}"
+            f"{frame.second:6d} "
+            f"{frame.rms:10.6f} "
+            f"{frame.peak:10.6f} "
+            f"{frame.dominant_frequency:10.1f}"
         )
 
 
