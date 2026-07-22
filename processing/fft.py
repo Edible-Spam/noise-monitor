@@ -1,17 +1,19 @@
 """
-FFT processing.
+Spectrum analysis.
 """
 
 from __future__ import annotations
 
 import numpy as np
 
+from models.spectrum import Spectrum
+
 
 MIN_FREQUENCY = 20.0
 MAX_FREQUENCY = 5000.0
 
 
-def dominant_frequency(samples, sample_rate):
+def analyse_spectrum(samples, sample_rate) -> Spectrum:
 
     window = np.hanning(len(samples))
 
@@ -32,13 +34,23 @@ def dominant_frequency(samples, sample_rate):
         (frequency <= MAX_FREQUENCY)
     )
 
-    valid_freq = frequency[valid]
-    valid_mag = magnitude[valid]
+    frequency = frequency[valid]
+    magnitude = magnitude[valid]
 
-    peak = np.argmax(valid_mag)
+    peak = np.argmax(magnitude)
 
-    return (
-        float(valid_freq[peak]),
-        valid_freq,
-        valid_mag,
+    dominant = float(frequency[peak])
+
+    # Spectral centroid
+    centroid = float(
+        np.sum(frequency * magnitude)
+        /
+        np.sum(magnitude)
+    )
+
+    return Spectrum(
+        dominant_frequency=dominant,
+        spectral_centroid=centroid,
+        frequencies=frequency,
+        magnitudes=magnitude,
     )

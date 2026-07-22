@@ -1,16 +1,15 @@
 """
-Represents one second of analysed audio.
+Frequency-domain analysis results.
 """
 
 from dataclasses import dataclass
+import numpy as np
 
 
 @dataclass(slots=True)
-class AudioFrame:
-    second: int
-
-    rms: float
-    peak: float
-
+class Spectrum:
     dominant_frequency: float
     spectral_centroid: float
+
+    frequencies: np.ndarray
+    magnitudes: np.ndarray

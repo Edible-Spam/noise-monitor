@@ -7,8 +7,7 @@ from __future__ import annotations
 from models.audio_frame import AudioFrame
 
 from processing.audio import rms, peak
-from processing.fft import dominant_frequency
-
+from processing.fft import analyse_spectrum
 
 def analyse_audio(samples, sample_rate):
 
@@ -25,7 +24,7 @@ def analyse_audio(samples, sample_rate):
 
         block = samples[start:end]
 
-        dominant, _, _ = dominant_frequency(
+        spectrum = analyse_spectrum(
             block,
             sample_rate,
         )
@@ -35,7 +34,8 @@ def analyse_audio(samples, sample_rate):
 			second=second,
 			rms=rms(block),
 			peak=peak(block),
-			dominant_frequency=dominant,
+			dominant_frequency=spectrum.dominant_frequency,
+			spectral_centroid=spectrum.spectral_centroid,
 		)
         )
 

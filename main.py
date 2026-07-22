@@ -38,7 +38,8 @@ def main():
         f"{'Time':>6} "
         f"{'RMS':>10} "
         f"{'Peak':>10} "
-        f"{'Freq':>10}"
+        f"{'Freq':>10} "
+        f"{'Centre':>10}"
     )
 
     print("-" * 42)
@@ -49,7 +50,8 @@ def main():
             f"{frame.second:6d} "
             f"{frame.rms:10.6f} "
             f"{frame.peak:10.6f} "
-            f"{frame.dominant_frequency:10.1f}"
+            f"{frame.dominant_frequency:10.1f} "
+            f"{frame.spectral_centroid:10.1f}"
         )
 
 
