@@ -1,5 +1,5 @@
 """
-NoiseMonitor v0.2
+NoiseMonitor v0.4
 """
 
 from config import SAMPLE_FILE
@@ -8,35 +8,49 @@ from processing.audio import (
     load_audio,
     select_microphone_channel,
     remove_dc,
-    rms,
-    peak,
 )
+
+from processing.analyse import analyse_audio
 
 
 def main():
 
     print()
-    print("NoiseMonitor v0.2")
+
+    print("NoiseMonitor v0.4")
+
     print()
 
     sample_rate, samples = load_audio(SAMPLE_FILE)
-
-    print(f"Sample Rate : {sample_rate:,} Hz")
-    print(f"Shape       : {samples.shape}")
-
-    print()
 
     samples = select_microphone_channel(samples)
 
     samples = remove_dc(samples)
 
+    results = analyse_audio(
+        samples,
+        sample_rate,
+    )
+
     print()
 
-    print(f"Duration : {len(samples) / sample_rate:.2f} seconds")
+    print(
+        f"{'Time':>6} "
+        f"{'RMS':>10} "
+        f"{'Peak':>10} "
+        f"{'Freq':>10}"
+    )
 
-    print(f"RMS       : {rms(samples):.6f}")
+    print("-" * 42)
 
-    print(f"Peak      : {peak(samples):.6f}")
+    for row in results:
+
+        print(
+            f"{row['second']:6d} "
+            f"{row['rms']:10.6f} "
+            f"{row['peak']:10.6f} "
+            f"{row['dominant']:10.1f}"
+        )
 
 
 if __name__ == "__main__":
