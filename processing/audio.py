@@ -18,7 +18,7 @@ def load_audio(filename):
     samples
     """
 
-    samples, sample_rate = sf.read(filename)
+    samples, sample_rate = sf.read(filename, always_2d=False)
 
     return sample_rate, samples
 
@@ -49,10 +49,10 @@ def remove_dc(samples):
 
 
 def rms(samples):
-
-    return float(np.sqrt(np.mean(samples ** 2)))
+    """Return root-mean-square amplitude, including for an empty block."""
+    return float(np.sqrt(np.mean(samples ** 2))) if len(samples) else 0.0
 
 
 def peak(samples):
-
-    return float(np.max(np.abs(samples)))
+    """Return peak absolute amplitude, including for an empty block."""
+    return float(np.max(np.abs(samples))) if len(samples) else 0.0

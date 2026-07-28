@@ -25,6 +25,9 @@ class Microphone:
 
     def start(self) -> None:
 
+        if self.process is not None:
+            return
+
         command = [
             "ffmpeg",
             "-hide_banner",
@@ -87,3 +90,10 @@ class Microphone:
                 self.process.kill()
 
             self.process = None
+
+    def __enter__(self):
+        self.start()
+        return self
+
+    def __exit__(self, exc_type, exc, traceback) -> None:
+        self.stop()

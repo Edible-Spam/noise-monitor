@@ -15,6 +15,9 @@ MAX_FREQUENCY = 5000.0
 
 def analyse_spectrum(samples, sample_rate) -> Spectrum:
 
+    if len(samples) == 0:
+        return Spectrum(0.0, 0.0, np.array([]), np.array([]))
+
     window = np.hanning(len(samples))
 
     samples = samples * window
@@ -37,15 +40,16 @@ def analyse_spectrum(samples, sample_rate) -> Spectrum:
     frequency = frequency[valid]
     magnitude = magnitude[valid]
 
+    if not len(magnitude) or not np.any(magnitude):
+        return Spectrum(0.0, 0.0, frequency, magnitude)
+
     peak = np.argmax(magnitude)
 
     dominant = float(frequency[peak])
 
     # Spectral centroid
     centroid = float(
-        np.sum(frequency * magnitude)
-        /
-        np.sum(magnitude)
+        np.sum(frequency * magnitude) / np.sum(magnitude)
     )
 
     return Spectrum(
