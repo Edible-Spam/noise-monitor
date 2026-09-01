@@ -1,0 +1,16 @@
+[Unit]
+Description=Noise Monitor
+After=sound.target network.target
+
+[Service]
+Type=simple
+User=spam
+Group=spam
+WorkingDirectory=/home/spam/noise-monitor
+ExecStart=/home/spam/noise-monitor/.venv/bin/python /home/spam/noise-monitor/main.py monitor --threshold 0.10
+Restart=always
+RestartSec=5
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target

@@ -11,6 +11,11 @@ BASE_DIR = Path(__file__).resolve().parent
 SAMPLE_FILE = BASE_DIR / "sample.wav"
 SAMPLE_RATE = 48_000
 FRAME_SECONDS = 1.0
+# ``plughw`` lets ALSA convert the microphone's native format for FFmpeg.
+# Use ``arecord -l`` on the Pi if the card identifier differs.
+MICROPHONE_DEVICE = "plughw:CARD=ICS43434,DEV=0"
+# ALSA/FFmpeg needs a short period before its first buffer is available.
+MICROPHONE_STARTUP_SECONDS = 5.0
 
 # Monitoring
 EVENT_RMS_THRESHOLD = 0.10

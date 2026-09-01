@@ -8,7 +8,12 @@ mono NumPy arrays.
 from __future__ import annotations
 
 import subprocess
+import time
+import os
+import select
 import numpy as np
+
+from config import MICROPHONE_DEVICE, MICROPHONE_STARTUP_SECONDS, SAMPLE_RATE
 
 
 class Microphone:
@@ -16,7 +21,7 @@ class Microphone:
 
     def __init__(self, channel: str | int = "auto") -> None:
 
-        self.sample_rate = 48000
+        self.sample_rate = SAMPLE_RATE
         self.channels = 2
         self.bytes_per_sample = 4          # S32_LE
         self.frames_per_read = 1024
@@ -45,8 +50,8 @@ class Microphone:
 
             "-f", "alsa",
             "-ac", "2",
-            "-ar", "48000",
-            "-i", "hw:CARD=ICS43434,DEV=0",
+            "-ar", str(self.sample_rate),
+            "-i", MICROPHONE_DEVICE,
 
             "-f", "s32le",
             "-"
@@ -61,6 +66,11 @@ class Microphone:
 
         print("Microphone started.\n")
 
+        # The I2S/ALSA pipeline may report an empty first buffer while it is
+        # still settling.  Wait before channel auto-detection so we preserve
+        # and analyse a real initial block.
+        time.sleep(MICROPHONE_STARTUP_SECONDS)
+
         # If auto-detection is requested, read a short burst and pick the
         # channel with higher RMS energy. We store those prefetched samples
         # so the first calls to `read()` return continuous data.
@@ -72,7 +82,7 @@ class Microphone:
             if self.process.stdout is None:
                 return
 
-            data = self.process.stdout.read(bytes_to_read)
+            data = self._read_raw_bytes(detect_frames, timeout=10.0)
 
             if len(data) == bytes_to_read:
                 samples = np.frombuffer(data, dtype=np.int32).reshape(-1, 2)
@@ -145,7 +155,7 @@ class Microphone:
                 return np.concatenate(out_parts)
 
         # Normal read path when no prefetched data remains
-        data = self.process.stdout.read(bytes_to_read)
+        data = self._read_raw_bytes(self.frames_per_read)
 
         if len(data) != bytes_to_read:
             return np.array([], dtype=np.float32)
@@ -155,6 +165,32 @@ class Microphone:
         mono = self._select_mono_from_samples(samples)
 
         return mono
+
+    def _read_raw_bytes(self, frame_count: int, timeout: float = 1.0) -> bytes:
+        """Read a complete raw-audio buffer, waiting for FFmpeg to produce it."""
+        if self.process is None or self.process.stdout is None:
+            return b""
+
+        expected = frame_count * self.channels * self.bytes_per_sample
+        data = bytearray()
+        deadline = time.monotonic() + timeout
+
+        while len(data) < expected:
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                break
+            ready, _, _ = select.select([self.process.stdout], [], [], remaining)
+            if not ready:
+                break
+            chunk = os.read(self.process.stdout.fileno(), expected - len(data))
+            if chunk:
+                data.extend(chunk)
+            elif self.process.poll() is not None:
+                break
+            else:
+                time.sleep(0.01)
+
+        return bytes(data)
 
     def _select_mono_from_samples(self, samples: np.ndarray) -> np.ndarray:
         """Return a float32 mono array (length == frames_per_read) from raw int32 stereo samples."""
